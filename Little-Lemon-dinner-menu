@@ -1,0 +1,71 @@
+package com.littlelemon.menu
+
+import android.content.Intent
+import android.os.Bundle
+import androidx.appcompat.app.AppCompatActivity
+import android.widget.ImageView
+import android.widget.TextView
+
+data class MenuItem(
+    val id: Int,
+    val title: String,
+    val price: Double,
+    val category: String,
+    val image: Int
+)
+
+object MenuRepository {
+
+    val menuItems = listOf(
+        MenuItem(1, "Latte", 8.0, "Drinks", R.drawable.latte),
+        MenuItem(2, "Mocha", 9.0, "Drinks", R.drawable.mocha),
+        MenuItem(3, "Lasagna", 15.0, "Food", R.drawable.lasagna),
+        MenuItem(4, "Croissant", 6.0, "Dessert", R.drawable.croissant)
+    )
+}
+
+class MenuManager {
+
+    companion object {
+        const val SORT_AZ = "A-Z"
+        const val SORT_PRICE_ASC = "PRICE_ASC"
+        const val SORT_PRICE_DESC = "PRICE_DESC"
+        const val FILTER_ALL = "All"
+    }
+
+    fun sort(items: List<MenuItem>, option: String): List<MenuItem> =
+        when (option) {
+            SORT_AZ -> items.sortedBy { it.title }
+            SORT_PRICE_ASC -> items.sortedBy { it.price }
+            SORT_PRICE_DESC -> items.sortedByDescending { it.price }
+            else -> items
+        }
+
+    fun filter(items: List<MenuItem>, category: String): List<MenuItem> =
+        if (category == FILTER_ALL) items else items.filter { it.category == category }
+
+    fun search(items: List<MenuItem>, query: String): List<MenuItem> =
+        items.filter { it.title.contains(query, true) }
+}
+
+class DetailActivity : AppCompatActivity() {
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_detail)
+
+        val id = intent.getIntExtra("ITEM_ID", 0)
+        val item = MenuRepository.menuItems.first { it.id == id }
+
+        findViewById<TextView>(R.id.title).text = item.title
+        findViewById<TextView>(R.id.price).text = "$${item.price}"
+        findViewById<TextView>(R.id.category).text = item.category
+        findViewById<ImageView>(R.id.image).setImageResource(item.image)
+    }
+}
+
+fun openDetail(activity: AppCompatActivity, item: MenuItem) {
+    val intent = Intent(activity, DetailActivity::class.java)
+    intent.putExtra("ITEM_ID", item.id)
+    activity.startActivity(intent)
+}
